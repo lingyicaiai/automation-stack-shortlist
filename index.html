@@ -36,6 +36,16 @@
   </div>
 
   <div class="card">
+    <strong>行业预设模板</strong>
+    <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px">
+      <button type="button" class="preset" data-p="content">内容创作</button>
+      <button type="button" class="preset" data-p="ecom">电商</button>
+      <button type="button" class="preset" data-p="sales">销售</button>
+    </div>
+    <p class="muted" style="margin:.5rem 0 0">点击后会自动填充角色、预算、技术水平和流程。</p>
+  </div>
+
+  <div class="card">
     <label>你想自动化的流程（逗号分隔）
       <textarea id="flows" rows="3" placeholder="例如：内容选题, 素材整理, 定时分发, 客户线索跟进">内容选题, 素材整理, 多平台分发</textarea>
     </label>
@@ -50,6 +60,12 @@ const stacks=[
  {name:'轻代码平衡型',fit:['会基础脚本','开发者'],tools:['n8n','Airtable','Cloudflare Workers','Telegram Bot'],cost:20,pros:['性价比高','可扩展'],cons:['需少量维护']},
  {name:'开发者可控型',fit:['开发者'],tools:['Next.js','Supabase','GitHub Actions','Vercel'],cost:25,pros:['可定制强','长期成本低'],cons:['开发时间稍长']}
 ];
+
+const presets={
+  content:{ role:'内容创作者', budget:30, level:'小白', flows:'热点选题, 长文改写, 多平台分发, 数据复盘' },
+  ecom:{ role:'电商', budget:80, level:'会基础脚本', flows:'商品上新同步, 价格监控, 库存预警, 客服FAQ回复' },
+  sales:{ role:'销售/客服', budget:60, level:'会基础脚本', flows:'线索收集, 自动跟进提醒, CRM更新, 周报汇总' }
+};
 function pick(level,budget){
   return stacks
     .map(s=>({...s,score:(s.fit.includes(level)?2:0)+(budget>=s.cost?2:0)+(s.cost===0?1:0)}))
@@ -75,6 +91,24 @@ document.getElementById('gen').onclick=()=>{
     `<div class='card'><h3>7天落地计划</h3><ol>${p.map(x=>`<li>${x}</li>`).join('')}</ol></div>`;
 }
 const roleEl=document.getElementById('role');
+const budget=document.getElementById('budget');
+const level=document.getElementById('level');
+const flows=document.getElementById('flows');
+const out=document.getElementById('out');
+
+document.querySelectorAll('.preset').forEach(btn=>{
+  btn.onclick=()=>{
+    const p=presets[btn.dataset.p];
+    if(!p) return;
+    roleEl.value=p.role;
+    budget.value=p.budget;
+    level.value=p.level;
+    flows.value=p.flows;
+    document.getElementById('gen').click();
+  };
+});
+
+document.getElementById('gen').click();
 </script>
 </body>
 </html>

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Automation Stack Shortlist</title>
+  <style>
+    body{font-family:Inter,system-ui,-apple-system,sans-serif;margin:0;background:#0b1020;color:#e8ecff}
+    .wrap{max-width:920px;margin:36px auto;padding:0 16px}
+    .card{background:#131a33;border:1px solid #2b3768;border-radius:14px;padding:18px;margin-bottom:14px}
+    h1{margin:0 0 8px;font-size:30px} .muted{opacity:.8}
+    textarea,input,select{width:100%;background:#0f1630;color:#e8ecff;border:1px solid #35457f;border-radius:10px;padding:10px;margin-top:6px}
+    button{background:#6ea8fe;border:none;color:#06122f;padding:12px 16px;border-radius:10px;font-weight:700;cursor:pointer}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+    ul{margin:.3rem 0 .4rem 1.1rem}
+    .chip{display:inline-block;padding:4px 8px;border:1px solid #4157a0;border-radius:999px;margin:2px;font-size:12px}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Automation Stack Shortlist</h1>
+  <p class="muted">把“我想自动化但不知道用啥工具”变成可执行的 3 套工具组合 + 7 天落地计划。</p>
+
+  <div class="card grid">
+    <label>你的角色
+      <select id="role">
+        <option>内容创作者</option><option>独立开发者</option><option>运营/市场</option><option>销售/客服</option><option>电商</option>
+      </select>
+    </label>
+    <label>预算/月(USD)
+      <input id="budget" type="number" value="50" min="0" />
+    </label>
+    <label>技术水平
+      <select id="level"><option>小白</option><option>会基础脚本</option><option>开发者</option></select>
+    </label>
+  </div>
+
+  <div class="card">
+    <label>你想自动化的流程（逗号分隔）
+      <textarea id="flows" rows="3" placeholder="例如：内容选题, 素材整理, 定时分发, 客户线索跟进">内容选题, 素材整理, 多平台分发</textarea>
+    </label>
+    <button id="gen">生成推荐</button>
+  </div>
+
+  <div id="out"></div>
+</div>
+<script>
+const stacks=[
+ {name:'No-code 快速型',fit:['小白'],tools:['n8n','Notion','Tally/Typeform','Google Sheets'],cost:0,pros:['最快上线','几乎零代码'],cons:['复杂逻辑受限']},
+ {name:'轻代码平衡型',fit:['会基础脚本','开发者'],tools:['n8n','Airtable','Cloudflare Workers','Telegram Bot'],cost:20,pros:['性价比高','可扩展'],cons:['需少量维护']},
+ {name:'开发者可控型',fit:['开发者'],tools:['Next.js','Supabase','GitHub Actions','Vercel'],cost:25,pros:['可定制强','长期成本低'],cons:['开发时间稍长']}
+];
+function pick(level,budget){
+  return stacks
+    .map(s=>({...s,score:(s.fit.includes(level)?2:0)+(budget>=s.cost?2:0)+(s.cost===0?1:0)}))
+    .sort((a,b)=>b.score-a.score).slice(0,3);
+}
+function plan(flows){
+  const f=flows.split(',').map(x=>x.trim()).filter(Boolean);
+  return [
+    `D1: 明确目标指标（处理时长/错误率）并拆分流程：${f.join('、')||'核心流程'}`,
+    'D2: 搭建数据入口（表单/表格/API）',
+    'D3: 完成触发器 + 主流程（先跑通单条）',
+    'D4: 增加异常处理和通知（Telegram/邮箱）',
+    'D5: 批量测试 30 条样本并修正',
+    'D6: 上线 MVP + 文档',
+    'D7: 复盘并决定下一步自动化环节'
+  ];
+}
+document.getElementById('gen').onclick=()=>{
+  const role=roleEl.value,b=+budget.value,l=level.value,f=flows.value;
+  const picks=pick(l,b); const p=plan(f);
+  out.innerHTML=`<div class='card'><strong>你的场景：</strong>${role} · 预算 $${b}/月 · ${l}</div>`+
+    picks.map(s=>`<div class='card'><h3>${s.name}</h3><div>${s.tools.map(t=>`<span class='chip'>${t}</span>`).join('')}</div><p>预计成本：$${s.cost}/月</p><ul>${s.pros.map(x=>`<li>${x}</li>`).join('')}</ul><p class='muted'>限制：${s.cons.join('；')}</p></div>`).join('')+
+    `<div class='card'><h3>7天落地计划</h3><ol>${p.map(x=>`<li>${x}</li>`).join('')}</ol></div>`;
+}
+const roleEl=document.getElementById('role');
+</script>
+</body>
+</html>
